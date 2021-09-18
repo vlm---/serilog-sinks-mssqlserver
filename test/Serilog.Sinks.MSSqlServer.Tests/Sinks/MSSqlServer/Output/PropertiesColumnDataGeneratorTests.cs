@@ -137,6 +137,7 @@ namespace Serilog.Sinks.MSSqlServer.Tests.Output
             Assert.Equal("1", result[0].Value);
         }
 
+        [Trait("Bugfix", "#312")]
         [Fact]
         public void ConvertPropertiesToColumnConvertsUniqueIdentifier()
         {
@@ -158,6 +159,31 @@ namespace Serilog.Sinks.MSSqlServer.Tests.Output
             var expectedResult = Guid.Parse(propertyValue);
             Assert.Equal(propertyKey, result[0].Key);
             Assert.IsType<Guid>(result[0].Value);
+            Assert.Equal(expectedResult, result[0].Value);
+        }
+
+        [Trait("Bugfix", "#XXX")]
+        [Fact]
+        public void ConvertPropertiesToColumnConvertsDoubleToInt()
+        {
+            // Arrange
+            const string propertyKey = "AdditionalProperty1";
+            const double propertyValue = 123.45;
+            var properties = new ReadOnlyDictionary<string, LogEventPropertyValue>(
+                new Dictionary<string, LogEventPropertyValue>
+                {
+                    { propertyKey, new ScalarValue(propertyValue) }
+                });
+            _columnOptions.AdditionalColumns.Add(new SqlColumn(propertyKey, SqlDbType.Int));
+            CreateSut();
+
+            // Act
+            var result = _sut.ConvertPropertiesToColumn(properties).ToArray();
+
+            // Assert
+            var expectedResult = 123;
+            Assert.Equal(propertyKey, result[0].Key);
+            Assert.IsType<int>(result[0].Value);
             Assert.Equal(expectedResult, result[0].Value);
         }
 

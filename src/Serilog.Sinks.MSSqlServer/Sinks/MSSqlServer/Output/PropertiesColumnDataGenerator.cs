@@ -72,12 +72,20 @@ namespace Serilog.Sinks.MSSqlServer.Output
             conversion = null;
             try
             {
-                conversion = TypeDescriptor.GetConverter(type).ConvertFrom(obj);
+                conversion = Convert.ChangeType(obj, type, CultureInfo.InvariantCulture);
                 return true;
             }
             catch
             {
-                return false;
+                try
+                {
+                    conversion = TypeDescriptor.GetConverter(type).ConvertFrom(obj);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
     }
